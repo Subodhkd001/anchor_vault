@@ -11,9 +11,11 @@ pub mod anchor_vault {
         
     }
 
-    // pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-    //     Ok(())
-    // }
+    pub fn deposit(ctx: Context<Deposit>, amt: u64) -> Result<()> {
+        ctx.accounts.deposit(amt)
+    }
+
+
 }
 
 #[derive(Accounts)]
@@ -144,6 +146,44 @@ impl<'info> Initialize<'info> {
          */
     }
 }
+
+// -----------------deposit---------------------------
+
+#[derive(Accounts)]
+pub struct Deposit<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+
+    #[account( 
+        seeds=[b"state",user.key().as_ref()],
+        bump=vault_state.state_bump
+    )]
+    pub vault_state: Account<'info, VaultState>,
+
+    #[account(
+        mut,
+        seeds=[b"vault",vault_state.key().as_ref()],
+        bump=vault_state.vault_bump
+    )]
+    pub vault: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+impl<'info> Deposit<'info> {
+    pub fn deposit(&mut self, amount: u64) -> Result<()> {
+        let program_id = self.system_program.to_account_info();
+
+        let cpi_accounts = Transfer {
+            from: self.user.to_account_info(),
+            to: self.vault.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new(program_id, cpi_accounts);
+        transfer(cpi_ctx, amount)?;
+        Ok(())
+    }
+}
+
 
 #[account]
 #[derive(InitSpace)]
