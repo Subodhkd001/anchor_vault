@@ -50,7 +50,32 @@ describe("anchor_vault", () => {
     expect(vaultBalance).to.equal(rentExempt);
   });
 
+  it("Deposit SOL into the vault", async () => {
+    const depositAmount = 1 * anchor.web3.LAMPORTS_PER_SOL; // 1 SOL
+
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    const initialUserBalance = await provider.connection.getBalance(user);
+
+    await program.methods
+      .deposit(new anchor.BN(depositAmount))
+      .accountsStrict({
+        user: user,
+        vault: vaultPda,
+        vaultState: vaultStatePda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+    const finalUserBalance = await provider.connection.getBalance(user);
+
+    expect(finalVaultBalance).to.equal(initialVaultBalance + depositAmount);
+    // User balance decreases by amount - fees
+    expect(finalUserBalance).to.equal(initialUserBalance - depositAmount - 5000);
+  });
+
   
+
 
   
 });
