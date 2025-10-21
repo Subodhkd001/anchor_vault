@@ -3,14 +3,25 @@ import { Program } from "@coral-xyz/anchor";
 import { AnchorVault } from "../target/types/anchor_vault";
 
 describe("anchor_vault", () => {
-  // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider)
 
-  const program = anchor.workspace.anchorVault as Program<AnchorVault>;
+  const program = anchor.workspace.AnchorVault as Program<AnchorVault>;
 
-  it("Is initialized!", async () => {
-    // Add your test here.
-    const tx = await program.methods.initialize().rpc();
-    console.log("Your transaction signature", tx);
-  });
+  const user = provider.wallet.publicKey
+
+  // derive pda
+
+   const [vaultStatePda, stateBump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("state"), user.toBuffer()],
+    program.programId
+  );
+
+   const [vaultPda, vaultBump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("vault"), vaultStatePda.toBuffer()],
+    program.programId
+  );
+
+
+  
 });
