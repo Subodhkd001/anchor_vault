@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { AnchorVault } from "../target/types/anchor_vault";
+import { expect } from "chai";
 
 describe("anchor_vault", () => {
   const provider = anchor.AnchorProvider.env();
@@ -22,6 +23,34 @@ describe("anchor_vault", () => {
     program.programId
   );
 
+    before(async () => {
+    // Airdrop for fees 
+    await provider.connection.requestAirdrop(user, 10 * anchor.web3.LAMPORTS_PER_SOL);
+    // Wait for confirmation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  });
+
+  it("Initialize the vault", async () => {
+    await program.methods
+      .initialize()
+      .accountsStrict({
+        user: user,
+        vaultState: vaultStatePda,
+        vault: vaultPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const vaultState = await program.account.vaultState.fetch(vaultStatePda);
+    expect(vaultState.vaultBump).to.equal(vaultBump);
+    expect(vaultState.stateBump).to.equal(stateBump);
+
+    const vaultBalance = await provider.connection.getBalance(vaultPda);
+    const rentExempt = await provider.connection.getMinimumBalanceForRentExemption(0);
+    expect(vaultBalance).to.equal(rentExempt);
+  });
+
+  
 
   
 });

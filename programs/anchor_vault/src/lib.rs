@@ -70,6 +70,8 @@ impl<'info> Initialize<'info> {
     }
 }
 
+// ------------ Deposit -----------------
+
 #[derive(Accounts)]
 pub struct Deposit<'info> {
     #[account(mut)]
@@ -104,6 +106,8 @@ impl<'info> Deposit<'info> {
     }
 }
 
+// ------------ Withdraw -----------------
+
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
     #[account(mut)]
@@ -137,6 +141,8 @@ impl<'info> Withdraw<'info> {
         Ok(())
     }
 }
+
+// ------------ Close -----------------
 
 #[derive(Accounts)]
 pub struct Close<'info> {
