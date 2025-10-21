@@ -74,7 +74,33 @@ describe("anchor_vault", () => {
     expect(finalUserBalance).to.equal(initialUserBalance - depositAmount - 5000);
   });
 
+  it("Withdraw SOL from the vault", async () => {
+    const withdrawAmount = 0.5 * anchor.web3.LAMPORTS_PER_SOL; // 0.5 SOL
+
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    const initialUserBalance = await provider.connection.getBalance(user);
+
+    await program.methods
+      .withdraw(new anchor.BN(withdrawAmount))
+      .accountsStrict({
+        user: user,
+        vault: vaultPda,
+        vaultState: vaultStatePda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+    const finalUserBalance = await provider.connection.getBalance(user);
+
+    expect(finalVaultBalance).to.equal(initialVaultBalance - withdrawAmount);
+    // User balance increases by amount - fees
+    expect(finalUserBalance).to.equal(initialUserBalance + withdrawAmount - 5000);
+  });
+
   
+
+
 
 
   
