@@ -98,7 +98,33 @@ describe("anchor_vault", () => {
     expect(finalUserBalance).to.equal(initialUserBalance + withdrawAmount - 5000);
   });
 
-  
+   it("Close the vault", async () => {
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    const initialVaultStateBalance = await provider.connection.getBalance(vaultStatePda);
+    const initialUserBalance = await provider.connection.getBalance(user);
+
+    await program.methods
+      .close()
+      .accountsStrict({
+        user: user,
+        vault: vaultPda,
+        vaultState: vaultStatePda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const finalUserBalance = await provider.connection.getBalance(user);
+
+    // Vault should be 0
+    expect(await provider.connection.getBalance(vaultPda)).to.equal(0);
+
+    // VaultState should be closed (null)
+    const vaultStateInfo = await provider.connection.getAccountInfo(vaultStatePda);
+    expect(vaultStateInfo).to.be.null;
+
+    // User gets back the remaining balance - fees
+    expect(finalUserBalance).to.equal(initialUserBalance + initialVaultBalance + initialVaultStateBalance - 5000);
+  });
 
 
 

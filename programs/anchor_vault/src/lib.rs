@@ -14,10 +14,6 @@ pub mod anchor_vault {
         ctx.accounts.deposit(amt)
     }
 
-    pub fn deposit(ctx: Context<Deposit>, amt: u64) -> Result<()> {
-        ctx.accounts.deposit(amt)
-    }
-
     pub fn withdraw(ctx: Context<Withdraw>, amt: u64) -> Result<()> {
         ctx.accounts.withdraw(amt)
     }
